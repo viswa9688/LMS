@@ -1,4 +1,4 @@
-import api from './api';
+import api from '../utils/api';
 import { Course } from '../types';
 
 interface CourseFilters {
@@ -10,23 +10,25 @@ interface CourseFilters {
 
 export const courseService = {
   async getCourses(filters: CourseFilters = {}) {
-    const { data } = await api.get<Course[]>('/courses', { params: filters });
-    return data;
+    const { data } = await api.get<{ success: boolean; data: Course[] }>('/courses', { 
+      params: filters 
+    });
+    return data.data || [];
   },
 
   async getCourseById(id: string) {
-    const { data } = await api.get<Course>(`/courses/${id}`);
-    return data;
+    const { data } = await api.get<{ success: boolean; data: Course }>(`/courses/${id}`);
+    return data.data;
   },
 
   async createCourse(courseData: Partial<Course>) {
-    const { data } = await api.post<Course>('/courses', courseData);
-    return data;
+    const { data } = await api.post<{ success: boolean; data: Course }>('/courses', courseData);
+    return data.data;
   },
 
   async updateCourse(id: string, courseData: Partial<Course>) {
-    const { data } = await api.put<Course>(`/courses/${id}`, courseData);
-    return data;
+    const { data } = await api.put<{ success: boolean; data: Course }>(`/courses/${id}`, courseData);
+    return data.data;
   },
 
   async deleteCourse(id: string) {

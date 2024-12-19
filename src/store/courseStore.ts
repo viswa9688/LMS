@@ -17,7 +17,7 @@ interface CourseState {
   deleteCourse: (courseId: string) => Promise<void>;
 }
 
-export const useCourseStore = create<CourseState>((set, get) => ({
+export const useCourseStore = create<CourseState>((set) => ({
   courses: [],
   loading: false,
   error: null,
@@ -28,8 +28,10 @@ export const useCourseStore = create<CourseState>((set, get) => ({
       const courses = await courseService.getCourses(filters);
       set({ courses, loading: false });
     } catch (error) {
-      set({ error: 'Failed to fetch courses', loading: false });
-      console.error('Error fetching courses:', error);
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch courses', 
+        loading: false 
+      });
     }
   },
 
@@ -40,7 +42,6 @@ export const useCourseStore = create<CourseState>((set, get) => ({
         courses: [...state.courses, newCourse],
       }));
     } catch (error) {
-      console.error('Error adding course:', error);
       throw error;
     }
   },
@@ -54,7 +55,6 @@ export const useCourseStore = create<CourseState>((set, get) => ({
         ),
       }));
     } catch (error) {
-      console.error('Error updating course:', error);
       throw error;
     }
   },
@@ -66,7 +66,6 @@ export const useCourseStore = create<CourseState>((set, get) => ({
         courses: state.courses.filter((course) => course.id !== courseId),
       }));
     } catch (error) {
-      console.error('Error deleting course:', error);
       throw error;
     }
   },

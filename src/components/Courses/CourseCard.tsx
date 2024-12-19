@@ -32,22 +32,22 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center">
               <BookOpen className="w-4 h-4 mr-1" />
-              <span>{course.modules.length} modules</span>
+              <span>{course.modules?.length || 0} modules</span>
             </div>
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1" />
               <span>
-                {course.modules.reduce((acc, module) => 
-                  acc + module.content.length, 0)} lessons
+                {course.modules?.reduce((acc, module) => 
+                  acc + (module.content?.length || 0), 0) || 0} lessons
               </span>
             </div>
             <div className="flex items-center">
               <Users className="w-4 h-4 mr-1" />
-              <span>24 students</span>
+              <span>0 students</span>
             </div>
           </div>
         </div>
       </div>
     </Link>
   );
-}
+};
