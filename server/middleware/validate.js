@@ -2,7 +2,8 @@ import { createError } from '../utils/error.js';
 
 export const validate = (schema) => async (req, res, next) => {
   try {
-    await schema.parseAsync(req.body);
+    const validData = await schema.parseAsync(req.body);
+    req.body = validData; // Replace with validated data
     next();
   } catch (error) {
     const validationErrors = {};
@@ -11,10 +12,6 @@ export const validate = (schema) => async (req, res, next) => {
       validationErrors[err.path[0]] = err.message;
     });
     
-    res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: validationErrors,
-    });
+    next(createError(400, 'Validation failed', validationErrors));
   }
 };

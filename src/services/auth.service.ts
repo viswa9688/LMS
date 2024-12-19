@@ -1,5 +1,5 @@
 import { ApiError } from '../utils/errors';
-import api from './api';
+import api from '../utils/api';
 import { AuthResponse, LoginCredentials, RegisterData } from '../types/auth';
 import { User } from '../types';
 

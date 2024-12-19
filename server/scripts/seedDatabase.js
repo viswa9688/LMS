@@ -1,9 +1,9 @@
-import { connectDB } from '../config/database';
-import { cleanupDatabase } from './utils/cleanup';
-import { seedUsers } from './seeders/userSeeder';
-import { seedCourses } from './seeders/courseSeeder';
-import { seedProgress } from './seeders/progressSeeder';
-import logger from '../utils/logger';
+import { connectDB } from '../config/db.js';
+import { cleanupDatabase } from './utils/cleanup.js';
+import { seedUsers } from './seeders/userSeeder.js';
+import { seedCourses } from './seeders/courseSeeder.js';
+import { seedProgress } from './seeders/progressSeeder.js';
+import { logger } from '../utils/logger.js';
 
 async function seedDatabase() {
   try {

@@ -45,8 +45,7 @@ export const RegisterForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, touchedFields },
-    watch,
+    formState: { errors, isSubmitting },
     setError,
     clearErrors,
   } = useForm<RegisterFormData>({
@@ -54,44 +53,29 @@ export const RegisterForm = () => {
     defaultValues: {
       role: 'student',
     },
-    mode: 'onChange', // Enable real-time validation
   });
-
-  const password = watch('password');
 
   // Handle server-side validation errors
   useEffect(() => {
     if (validationErrors) {
       Object.entries(validationErrors).forEach(([field, message]) => {
-        setError(field as keyof RegisterFormData, { message });
+        setError(field as keyof RegisterFormData, { 
+          type: 'server',
+          message: message as string 
+        });
       });
     }
   }, [validationErrors, setError]);
 
-  // Clear errors when component unmounts
-  useEffect(() => {
-    return () => {
-      clearError();
-      clearErrors();
-    };
-  }, [clearError, clearErrors]);
-
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      clearErrors();
       await registerUser(data.email, data.password, data.name, data.role);
       navigate('/dashboard');
     } catch (err) {
       // Errors are handled by the store and useEffect above
     }
   };
-
-  const passwordRequirements = [
-    { regex: /.{8,}/, text: 'At least 8 characters' },
-    { regex: /[A-Z]/, text: 'One uppercase letter' },
-    { regex: /[a-z]/, text: 'One lowercase letter' },
-    { regex: /[0-9]/, text: 'One number' },
-    { regex: /[@$!%*?&]/, text: 'One special character (@$!%*?&)' },
-  ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
@@ -102,8 +86,6 @@ export const RegisterForm = () => {
         type="text"
         {...register('name')}
         error={errors.name?.message}
-        showErrorOnly={touchedFields.name}
-        aria-invalid={errors.name ? 'true' : 'false'}
       />
 
       <FormInput
@@ -111,47 +93,20 @@ export const RegisterForm = () => {
         type="email"
         {...register('email')}
         error={errors.email?.message}
-        showErrorOnly={touchedFields.email}
-        aria-invalid={errors.email ? 'true' : 'false'}
       />
 
-      <div className="space-y-2">
-        <FormInput
-          label="Password"
-          type="password"
-          {...register('password')}
-          error={errors.password?.message}
-          showErrorOnly={touchedFields.password}
-          aria-invalid={errors.password ? 'true' : 'false'}
-        />
-        
-        <div className="mt-2">
-          <p className="text-sm font-medium text-gray-700 mb-2">Password requirements:</p>
-          <ul className="text-sm space-y-1">
-            {passwordRequirements.map((requirement, index) => (
-              <li
-                key={index}
-                className={`flex items-center space-x-2 ${
-                  requirement.regex.test(password || '') 
-                    ? 'text-green-600' 
-                    : 'text-gray-500'
-                }`}
-              >
-                <span>{requirement.regex.test(password || '') ? '✓' : '○'}</span>
-                <span>{requirement.text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <FormInput
+        label="Password"
+        type="password"
+        {...register('password')}
+        error={errors.password?.message}
+      />
 
       <FormInput
         label="Confirm Password"
         type="password"
         {...register('confirmPassword')}
         error={errors.confirmPassword?.message}
-        showErrorOnly={touchedFields.confirmPassword}
-        aria-invalid={errors.confirmPassword ? 'true' : 'false'}
       />
 
       <FormSelect
@@ -168,7 +123,6 @@ export const RegisterForm = () => {
         type="submit"
         isLoading={loading || isSubmitting}
         className="w-full"
-        disabled={Object.keys(errors).length > 0}
       >
         Create Account
       </Button>
