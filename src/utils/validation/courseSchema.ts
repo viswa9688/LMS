@@ -12,8 +12,20 @@ export const courseSchema = z.object({
     .max(2000, 'Description cannot exceed 2000 characters'),
   
   thumbnail: z
+    .any()
+    .refine((file) => file instanceof File || typeof file === 'string', {
+      message: 'Please upload a thumbnail image',
+    }),
+  
+  instructorName: z
     .string()
-    .url('Please provide a valid URL for the thumbnail'),
+    .min(1, 'Instructor name is required'),
+  
+  instructorBio: z
+    .string()
+    .max(500, 'Bio cannot exceed 500 characters')
+    .optional()
+    .nullable(),
   
   category: z
     .string()
@@ -31,13 +43,10 @@ export const courseSchema = z.object({
     .number()
     .min(0, 'Discount price cannot be negative')
     .max(9999.99, 'Discount price cannot exceed 9999.99')
-    .optional(),
+    .optional()
+    .nullable(),
   
   language: z
     .string()
     .min(1, 'Please select a language'),
-  
-  instructorName: z
-    .string()
-    .min(1, 'Instructor name is required'),
 });

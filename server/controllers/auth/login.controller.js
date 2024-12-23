@@ -1,5 +1,4 @@
-import { generateTokens } from '../../utils/token.js';
-import { cookieConfig } from '../../config/cookie.config.js';
+import jwt from 'jsonwebtoken';
 import User from '../../models/user.model.js';
 import { createError } from '../../utils/error.js';
 import { logger } from '../../utils/logger.js';
@@ -14,12 +13,12 @@ export const login = async (req, res, next) => {
       return next(createError(401, 'Invalid credentials'));
     }
 
-    // Generate tokens
-    const tokens = await generateTokens(user);
-
-    // Set cookies
-    res.cookie('accessToken', tokens.accessToken, cookieConfig.accessToken);
-    res.cookie('refreshToken', tokens.refreshToken, cookieConfig.refreshToken);
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
 
     logger.info('User logged in successfully', { 
       userId: user._id,
@@ -27,6 +26,7 @@ export const login = async (req, res, next) => {
       role: user.role 
     });
 
+    // Set token in response
     res.json({
       success: true,
       data: {
@@ -34,6 +34,7 @@ export const login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        token, // Include token in response
       },
       message: 'Login successful',
     });

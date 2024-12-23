@@ -6,22 +6,28 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
 });
 
-// Request interceptor for adding auth token
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const authData = localStorage.getItem('auth-storage');
+    if (authData) {
+      try {
+        const { state } = JSON.parse(authData);
+        if (state.user?.token) {
+          config.headers.Authorization = `Bearer ${state.user.token}`;
+        }
+      } catch (error) {
+        console.error('Error parsing auth data:', error);
+      }
     }
     return config;
   },
   (error) => Promise.reject(new ApiError('Request configuration failed', error))
 );
 
-// Response interceptor for handling errors
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
@@ -29,6 +35,13 @@ api.interceptors.response.use(
       return Promise.reject(
         new ApiError('Unable to connect to the server. Please check your internet connection.')
       );
+    }
+
+    if (error.response.status === 401) {
+      // Clear auth storage and redirect to login
+      localStorage.removeItem('auth-storage');
+      window.location.href = '/login';
+      return Promise.reject(new ApiError('Session expired. Please login again.'));
     }
 
     if (error.response.data?.errors) {

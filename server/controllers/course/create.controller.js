@@ -1,20 +1,23 @@
-import Course from '../models/course.model.js';
-import { createError } from '../utils/error.js';
-import { logger } from '../utils/logger.js';
+import Course from '../../models/course.model.js';
+import { createError } from '../../utils/error.js';
+import { logger } from '../../utils/logger.js';
 
 export const createCourse = async (req, res, next) => {
   try {
     logger.info('Creating new course', { userId: req.user._id });
 
-    // Create course with validated data
+    // Validate and sanitize input data
     const courseData = {
-      ...req.body,
+      title: req.body.title?.trim(),
+      description: req.body.description?.trim(),
+      category: req.body.category,
+      level: req.body.level,
+      price: Number(req.body.price) || 0,
+      language: req.body.language || 'English',
+      thumbnail: req.body.thumbnail || 'https://via.placeholder.com/800x400',
       instructor: req.user._id,
-      // If thumbnail is a File, we'd handle file upload here
-      // For now, using a placeholder image
-      thumbnail: req.body.thumbnail instanceof File 
-        ? 'https://via.placeholder.com/800x400'
-        : req.body.thumbnail,
+      instructorName: req.user.name, // Use authenticated user's name
+      status: 'draft', // Default status
     };
 
     const course = await Course.create(courseData);
@@ -35,8 +38,8 @@ export const createCourse = async (req, res, next) => {
         category: course.category,
         level: course.level,
         price: course.price,
-        discountPrice: course.discountPrice,
         language: course.language,
+        status: course.status,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
       },
@@ -46,5 +49,3 @@ export const createCourse = async (req, res, next) => {
     next(error);
   }
 };
-
-// ... rest of the controller code remains the same

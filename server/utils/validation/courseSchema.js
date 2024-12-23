@@ -5,34 +5,17 @@ export const courseSchema = z.object({
     .string()
     .min(5, 'Title must be at least 5 characters')
     .max(100, 'Title cannot exceed 100 characters')
-    .trim(),
+    .transform(val => val.trim()),
   
   description: z
     .string()
     .min(20, 'Description must be at least 20 characters')
     .max(2000, 'Description cannot exceed 2000 characters')
-    .trim(),
-  
-  thumbnail: z
-    .string()
-    .url('Please provide a valid URL for the thumbnail'),
-  
-  instructorName: z
-    .string()
-    .min(1, 'Instructor name is required')
-    .trim(),
-  
-  instructorBio: z
-    .string()
-    .max(500, 'Bio cannot exceed 500 characters')
-    .optional()
-    .transform(val => val || undefined)
-    .trim(),
+    .transform(val => val.trim()),
   
   category: z
     .string()
-    .min(1, 'Category is required')
-    .trim(),
+    .min(1, 'Category is required'),
   
   level: z
     .enum(['beginner', 'intermediate', 'advanced']),
@@ -40,16 +23,18 @@ export const courseSchema = z.object({
   price: z
     .number()
     .min(0, 'Price cannot be negative')
-    .max(9999.99, 'Price cannot exceed 9999.99'),
-  
-  discountPrice: z
-    .number()
-    .min(0, 'Discount price cannot be negative')
-    .max(9999.99, 'Discount price cannot exceed 9999.99')
-    .optional(),
+    .max(9999.99, 'Price cannot exceed 9999.99')
+    .default(0)
+    .transform(val => Number(val) || 0),
   
   language: z
     .string()
     .min(1, 'Language is required')
-    .trim(),
+    .default('English'),
+  
+  thumbnail: z
+    .string()
+    .url('Thumbnail must be a valid URL')
+    .optional()
+    .default('https://via.placeholder.com/800x400'),
 });

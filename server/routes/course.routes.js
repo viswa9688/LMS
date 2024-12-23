@@ -5,18 +5,23 @@ import {
   getCourseById,
   updateCourse,
   deleteCourse,
-} from '../controllers/course.controller.js';
+} from '../controllers/course/index.js';
 import { protect, authorize } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.js';
+import { courseSchema } from '../utils/validation/courseSchema.js';
 
 const router = express.Router();
 
-router.route('/')
-  .get(getCourses)
-  .post(protect, authorize('instructor', 'admin'), createCourse);
+// Public routes
+router.get('/', getCourses);
+router.get('/:id', getCourseById);
 
-router.route('/:id')
-  .get(getCourseById)
-  .put(protect, authorize('instructor', 'admin'), updateCourse)
-  .delete(protect, authorize('instructor', 'admin'), deleteCourse);
+// Protected routes
+router.use(protect); // Apply protection to all routes below
+
+// Instructor/Admin only routes
+router.post('/', authorize('instructor', 'admin'), validate(courseSchema), createCourse);
+router.put('/:id', authorize('instructor', 'admin'), validate(courseSchema), updateCourse);
+router.delete('/:id', authorize('instructor', 'admin'), deleteCourse);
 
 export default router;

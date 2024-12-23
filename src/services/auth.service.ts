@@ -42,11 +42,7 @@ class AuthService {
     try {
       await api.post('/auth/logout');
     } catch (error) {
-      // Even if the server request fails, we want to clear local storage
       console.error('Logout error:', error);
-    } finally {
-      // Always clear local storage
-      localStorage.removeItem('auth-storage');
     }
   }
 
@@ -56,6 +52,7 @@ class AuthService {
       email: data.email,
       name: data.name,
       role: data.role as User['role'],
+      token: data.token,
     };
   }
 }
