@@ -7,6 +7,7 @@ import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { StudentDashboard } from '../pages/DashboardPage/StudentDashboard';
 import { InstructorDashboard } from '../pages/DashboardPage/InstructorDashboard';
+import { CreateCoursePage } from '../pages/CreateCoursePage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
           {
             path: 'instructor',
             element: <InstructorDashboard />,
+          },
+          {
+            path: 'courses/new',
+            element: <CreateCoursePage />,
           },
         ],
       },
