@@ -1,6 +1,7 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import { courseSchema } from '../../../utils/validation/courseSchema';
 import { useAuthStore } from '../../../store/authStore';
 import { useCourseStore } from '../../../store/courseStore';
@@ -13,18 +14,20 @@ import { CourseFormData } from '../../../types/course.types';
 import { CATEGORIES, LANGUAGES, DIFFICULTY_LEVELS } from '../../../constants/course';
 
 export const CourseForm = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { addCourse, loading } = useCourseStore();
-
+  
   const {
     register,
-    handleSubmit,
     control,
+    handleSubmit,
     formState: { errors },
   } = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
       instructorName: user?.name || '',
+      instructorBio: '',
       language: 'English',
       level: 'beginner',
       price: 0,
@@ -34,10 +37,20 @@ export const CourseForm = () => {
 
   const onSubmit = async (data: CourseFormData) => {
     try {
-      await addCourse(data);
-      // Handle success (e.g., redirect to course page)
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (key === 'thumbnail' && value instanceof File) {
+            formData.append('thumbnail', value);
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
+      await addCourse(formData);
+      navigate('/dashboard/instructor');
     } catch (error) {
-      // Handle error
       console.error('Failed to create course:', error);
     }
   };
@@ -45,52 +58,51 @@ export const CourseForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormInput
-        label="Course Title"
+        label="Title"
         {...register('title')}
         error={errors.title?.message}
       />
 
       <FormTextArea
-        label="Course Description"
+        label="Description"
         {...register('description')}
         error={errors.description?.message}
       />
 
       <FormImageUpload
         label="Course Thumbnail"
-        control={control}
         name="thumbnail"
+        control={control}
         error={errors.thumbnail?.message}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormInput
-          label="Instructor Name"
-          {...register('instructorName')}
-          disabled
-          error={errors.instructorName?.message}
-        />
+      <FormInput
+        label="Instructor Name"
+        {...register('instructorName')}
+        error={errors.instructorName?.message}
+        disabled
+      />
 
-        <FormTextArea
-          label="Instructor Bio"
-          {...register('instructorBio')}
-          error={errors.instructorBio?.message}
-        />
-      </div>
+      <FormTextArea
+        label="Instructor Bio"
+        {...register('instructorBio')}
+        error={errors.instructorBio?.message}
+        placeholder="Share your expertise and experience..."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormSelect
           label="Category"
           {...register('category')}
-          options={CATEGORIES}
           error={errors.category?.message}
+          options={CATEGORIES}
         />
 
         <FormSelect
-          label="Difficulty Level"
+          label="Level"
           {...register('level')}
-          options={DIFFICULTY_LEVELS}
           error={errors.level?.message}
+          options={DIFFICULTY_LEVELS}
         />
       </div>
 
@@ -100,9 +112,7 @@ export const CourseForm = () => {
           type="number"
           min="0"
           step="0.01"
-          {...register('price', {
-            setValueAs: (value) => parseFloat(value) || 0
-          })}
+          {...register('price', { valueAsNumber: true })}
           error={errors.price?.message}
         />
 
@@ -111,9 +121,7 @@ export const CourseForm = () => {
           type="number"
           min="0"
           step="0.01"
-          {...register('discountPrice', {
-            setValueAs: (value) => parseFloat(value) || 0
-          })}
+          {...register('discountPrice', { valueAsNumber: true })}
           error={errors.discountPrice?.message}
         />
       </div>
@@ -121,8 +129,8 @@ export const CourseForm = () => {
       <FormSelect
         label="Language"
         {...register('language')}
-        options={LANGUAGES}
         error={errors.language?.message}
+        options={LANGUAGES}
       />
 
       <Button

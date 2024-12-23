@@ -1,5 +1,5 @@
 import api from '../utils/api';
-import { Course } from '../types';
+import { Course, CourseFormData } from '../types';
 
 interface CourseFilters {
   category?: string;
@@ -21,8 +21,12 @@ export const courseService = {
     return data.data;
   },
 
-  async createCourse(courseData: Partial<Course>) {
-    const { data } = await api.post<{ success: boolean; data: Course }>('/courses', courseData);
+  async createCourse(courseData: FormData) {
+    const { data } = await api.post<{ success: boolean; data: Course }>('/courses', courseData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return data.data;
   },
 

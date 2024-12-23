@@ -12,17 +12,8 @@ export const courseSchema = z.object({
     .max(2000, 'Description cannot exceed 2000 characters'),
   
   thumbnail: z
-    .any()
-    .refine((file) => file instanceof File || typeof file === 'string', {
-      message: 'Please upload an image or provide a valid URL',
-    }),
-  
-  instructorName: z.string(),
-  
-  instructorBio: z
     .string()
-    .max(500, 'Bio cannot exceed 500 characters')
-    .optional(),
+    .url('Please provide a valid URL for the thumbnail'),
   
   category: z
     .string()
@@ -45,4 +36,8 @@ export const courseSchema = z.object({
   language: z
     .string()
     .min(1, 'Please select a language'),
+  
+  instructorName: z
+    .string()
+    .min(1, 'Instructor name is required'),
 });
