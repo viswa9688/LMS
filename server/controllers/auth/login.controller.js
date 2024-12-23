@@ -1,5 +1,6 @@
-import jwt from 'jsonwebtoken';
-import { User } from '../../models/index.js';
+import { generateTokens } from '../../utils/token.js';
+import { cookieConfig } from '../../config/cookie.config.js';
+import User from '../../models/user.model.js';
 import { createError } from '../../utils/error.js';
 import { logger } from '../../utils/logger.js';
 
@@ -7,19 +8,18 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    logger.info('Attempting user login', { email });
-
     const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.matchPassword(password))) {
       logger.warn('Login failed - Invalid credentials', { email });
       return next(createError(401, 'Invalid credentials'));
     }
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
+    // Generate tokens
+    const tokens = await generateTokens(user);
+
+    // Set cookies
+    res.cookie('accessToken', tokens.accessToken, cookieConfig.accessToken);
+    res.cookie('refreshToken', tokens.refreshToken, cookieConfig.refreshToken);
 
     logger.info('User logged in successfully', { 
       userId: user._id,
@@ -34,7 +34,6 @@ export const login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        token,
       },
       message: 'Login successful',
     });

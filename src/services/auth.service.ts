@@ -4,16 +4,6 @@ import { AuthResponse, LoginCredentials, RegisterData } from '../types/auth';
 import { User } from '../types';
 
 class AuthService {
-  private tokenKey = 'token';
-
-  private setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
-  }
-
-  private clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
-  }
-
   async login(credentials: LoginCredentials): Promise<User> {
     try {
       const { data } = await api.post<AuthResponse>('/auth/login', credentials);
@@ -22,7 +12,6 @@ class AuthService {
         throw new ApiError(data.message || 'Login failed');
       }
 
-      this.setToken(data.data.token);
       return this.transformUserData(data.data);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -40,7 +29,6 @@ class AuthService {
         throw new ApiError(data.message || 'Registration failed');
       }
 
-      this.setToken(data.data.token);
       return this.transformUserData(data.data);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -50,8 +38,16 @@ class AuthService {
     }
   }
 
-  logout(): void {
-    this.clearToken();
+  async logout(): Promise<void> {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Even if the server request fails, we want to clear local storage
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local storage
+      localStorage.removeItem('auth-storage');
+    }
   }
 
   private transformUserData(data: AuthResponse['data']): User {

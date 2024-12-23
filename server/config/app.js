@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { errorHandler } from '../middleware/errorHandler.js';
 import { notFoundHandler } from '../middleware/notFoundHandler.js';
 import authRoutes from '../routes/auth.routes.js';
@@ -10,13 +11,16 @@ const createApp = () => {
 
   // CORS configuration
   app.use(cors({
-    origin: 'http://localhost:5173', // Vite dev server default port
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204
   }));
+
+  // Cookie parser middleware
+  app.use(cookieParser(process.env.COOKIE_SECRET));
 
   // Body parser middleware
   app.use(express.json());
