@@ -1,0 +1,41 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import { logger } from '../utils/logger.js';
+
+// Load environment variables
+dotenv.config();
+
+const connectDB = async () => {
+  try {
+    // Check if MONGODB_URI is defined
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+    });
+
+    mongoose.connection.on('error', (err) => {
+      logger.error('MongoDB connection error:', err);
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      logger.warn('MongoDB disconnected');
+    });
+
+    mongoose.connection.on('connected', () => {
+      logger.info('MongoDB connected');
+    });
+
+    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
+  } catch (error) {
+    logger.error('MongoDB connection error:', error);
+    throw error;
+  }
+};
+
+export { connectDB };
